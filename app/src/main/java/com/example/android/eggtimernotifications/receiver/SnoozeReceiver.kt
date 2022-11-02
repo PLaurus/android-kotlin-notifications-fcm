@@ -26,6 +26,7 @@ import android.os.SystemClock
 import android.text.format.DateUtils
 import androidx.core.app.AlarmManagerCompat
 import androidx.core.content.ContextCompat
+import com.example.android.eggtimernotifications.util.PendingIntentCompat
 
 class SnoozeReceiver: BroadcastReceiver() {
     private val REQUEST_CODE = 0
@@ -38,7 +39,7 @@ class SnoozeReceiver: BroadcastReceiver() {
             context,
             REQUEST_CODE,
             notifyIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntentCompat.FLAG_IMMUTABLE
         )
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         AlarmManagerCompat.setExactAndAllowWhileIdle(

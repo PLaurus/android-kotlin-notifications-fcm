@@ -26,6 +26,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.*
 import com.example.android.eggtimernotifications.receiver.AlarmReceiver
 import com.example.android.eggtimernotifications.R
+import com.example.android.eggtimernotifications.util.PendingIntentCompat
 import com.example.android.eggtimernotifications.util.cancelNotifications
 import kotlinx.coroutines.*
 
@@ -65,14 +66,14 @@ class EggTimerViewModel(private val app: Application) : AndroidViewModel(app) {
             getApplication(),
             REQUEST_CODE,
             notifyIntent,
-            PendingIntent.FLAG_NO_CREATE
+            PendingIntent.FLAG_NO_CREATE or PendingIntentCompat.FLAG_IMMUTABLE
         ) != null
 
         notifyPendingIntent = PendingIntent.getBroadcast(
             getApplication(),
             REQUEST_CODE,
             notifyIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntentCompat.FLAG_IMMUTABLE
         )
 
         timerLengthOptions = app.resources.getIntArray(R.array.minutes_array)

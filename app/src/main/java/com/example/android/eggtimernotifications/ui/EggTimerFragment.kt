@@ -16,6 +16,7 @@
 
 package com.example.android.eggtimernotifications.ui
 
+import android.Manifest
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.graphics.Color
@@ -24,28 +25,41 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProviders
 import com.example.android.eggtimernotifications.R
 import com.example.android.eggtimernotifications.databinding.FragmentEggTimerBinding
-import com.google.firebase.messaging.FirebaseMessaging
 
 class EggTimerFragment : Fragment() {
 
-    private val TOPIC = "breakfast"
+    private val allNecessaryPermissionsRequest = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) {
+        // ignore for now
+    }
+
+    private val viewModel by viewModels<EggTimerViewModel>()
+
+    private val notificationManager: NotificationManager by lazy {
+        val notificationManager = ContextCompat.getSystemService(
+            requireContext(),
+            NotificationManager::class.java
+        )
+        requireNotNull(notificationManager)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
 
         val binding: FragmentEggTimerBinding = DataBindingUtil.inflate(
             inflater, R.layout.fragment_egg_timer, container, false
         )
-
-        val viewModel = ViewModelProviders.of(this).get(EggTimerViewModel::class.java)
 
         binding.eggTimerViewModel = viewModel
         binding.lifecycleOwner = this.viewLifecycleOwner
@@ -57,44 +71,64 @@ class EggTimerFragment : Fragment() {
         )
 
         // TODO: Step 3.1 create a new channel for FCM
+        createChannel(
+            channelId = getString(R.string.breakfast_notification_channel_id),
+            channelName = getString(R.string.breakfast_notification_channel_name)
+        )
 
         // TODO: Step 3.4 call subscribe topics on start
 
         return binding.root
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        requestSystemForAllNecessaryPermissions()
+    }
+
     private fun createChannel(channelId: String, channelName: String) {
-        // TODO: Step 1.6 START create a channel
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        	// Create channel to show notifications.
+            // Create channel to show notifications.
             val notificationChannel = NotificationChannel(
                 channelId,
                 channelName,
-                // TODO: Step 2.4 change importance
                 NotificationManager.IMPORTANCE_HIGH
-            )
-			    // TODO: Step 2.6 disable badges for this channel
-                .apply {
-                    setShowBadge(false)
-                }
+            ).apply {
+                setShowBadge(false)
+                enableLights(true)
+                lightColor = Color.RED
+                enableVibration(true)
+                description = getString(R.string.breakfast_notification_channel_description)
+            }
 
-            notificationChannel.enableLights(true)
-            notificationChannel.lightColor = Color.RED
-            notificationChannel.enableVibration(true)
-            notificationChannel.description = getString(R.string.breakfast_notification_channel_description)
-
-            val notificationManager = requireActivity().getSystemService(
-                NotificationManager::class.java
-            )
             notificationManager.createNotificationChannel(notificationChannel)
-
         }
         // TODO: Step 1.6 END create channel
     }
 
     // TODO: Step 3.3 subscribe to breakfast topic
 
+    private fun requestSystemForAllNecessaryPermissions() {
+        allNecessaryPermissionsRequest.launch(getListOfNecessaryPermissions())
+    }
+
+    private fun getListOfNecessaryPermissions(): Array<String> {
+        val permissions = arrayListOf<String>()
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissions.add(Manifest.permission.POST_NOTIFICATIONS)
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            permissions.add(Manifest.permission.SCHEDULE_EXACT_ALARM)
+        }
+
+        return permissions.toTypedArray()
+    }
+
     companion object {
+        private const val TOPIC = "breakfast"
+
         fun newInstance() = EggTimerFragment()
     }
 }
