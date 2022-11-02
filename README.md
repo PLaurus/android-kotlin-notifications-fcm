@@ -2,6 +2,7 @@ EggTimer - Final Code
 ============================================================================
 
 Solution code for Advanced Android with Kotlin Codelab 
+https://developer.android.com/codelabs/advanced-android-kotlin-training-notifications-fcm
 
 Introduction
 ------------
@@ -22,12 +23,4 @@ Pre-requisites
 You should be familiar with:
 
 * Services, AlarmManager, Broadcast Receivers.
-
-
-Getting Started
----------------
-
-1. Download
-2. Swtich to start branch
-3. Run the app.
 
