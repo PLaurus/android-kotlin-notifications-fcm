@@ -25,6 +25,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
@@ -33,6 +34,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProviders
 import com.example.android.eggtimernotifications.R
 import com.example.android.eggtimernotifications.databinding.FragmentEggTimerBinding
+import com.google.firebase.messaging.FirebaseMessaging
 
 class EggTimerFragment : Fragment() {
 
@@ -64,19 +66,17 @@ class EggTimerFragment : Fragment() {
         binding.eggTimerViewModel = viewModel
         binding.lifecycleOwner = this.viewLifecycleOwner
 
-        // TODO: Step 1.7 call create channel
         createChannel(
             getString(R.string.egg_notification_channel_id),
             getString(R.string.egg_notification_channel_name)
         )
 
-        // TODO: Step 3.1 create a new channel for FCM
         createChannel(
             channelId = getString(R.string.breakfast_notification_channel_id),
             channelName = getString(R.string.breakfast_notification_channel_name)
         )
 
-        // TODO: Step 3.4 call subscribe topics on start
+        subscribeToTopic()
 
         return binding.root
     }
@@ -103,10 +103,21 @@ class EggTimerFragment : Fragment() {
 
             notificationManager.createNotificationChannel(notificationChannel)
         }
-        // TODO: Step 1.6 END create channel
     }
 
-    // TODO: Step 3.3 subscribe to breakfast topic
+    private fun subscribeToTopic() {
+        FirebaseMessaging.getInstance()
+            .subscribeToTopic(TOPIC)
+            .addOnCompleteListener { task ->
+                val message = if (task.isSuccessful) {
+                    getString(R.string.message_subscribed)
+                } else {
+                    getString(R.string.message_subscribe_failed)
+                }
+
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            }
+    }
 
     private fun requestSystemForAllNecessaryPermissions() {
         allNecessaryPermissionsRequest.launch(getListOfNecessaryPermissions())
